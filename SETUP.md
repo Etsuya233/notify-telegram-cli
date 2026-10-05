@@ -35,7 +35,11 @@ git log --oneline upstream/main..main
 
 launcher 里写的是本仓库的绝对路径，所以 `git pull` 之后行为立即更新，不用重装。
 
-## 安装 / 重装
+## 首次安装
+
+见 [README 的首次安装一节](README.md#首次安装)。四步：克隆 → `./install.sh` → `./setup-wizard.sh` → `notify --doctor`。
+
+## install.sh 的行为
 
 ```bash
 ./install.sh              # 幂等，可反复运行
@@ -49,16 +53,6 @@ launcher 里写的是本仓库的绝对路径，所以 `git pull` 之后行为�
 
 skill 软链是幂等的：指向正确就跳过；指向别处就替换；若占位的是真实目录（例如上游安装脚本 `cp` 进来的副本），会先备份成 `.bak-<时间戳>` 再建软链。
 
-## 首次配置
-
-```bash
-./setup-wizard.sh
-```
-
-向导带你走四步：确认代理 → 在 BotFather 建 bot 拿 token → 发一条消息自动捕获 chat_id → 写配置并发测试消息。
-
-token 用隐藏输入读取，直接落进 600 权限的配置文件，**不经过对话记录**。
-
 ## 换机 / 重建
 
 顺序是 `install.sh` → `setup-wizard.sh`。
@@ -70,28 +64,11 @@ cd ~/programming/tg-notification
 ./setup-wizard.sh     # 重建凭据
 ```
 
-凭据在 `~/.config/notify-telegram-cli/config.json`，不在仓库里，所以新机器必须重跑向导。
+凭据在 `~/.config/notify-telegram-cli/config.json`，不在仓库里，所以新机器必须重跑向导。若新旧设备网络相同，也可以直接把这个文件拷过去，省掉向导。
+
+代理地址是设备相关的（`172.26.176.1:7890` 是 WSL 宿主地址），换网络时改 `config.json` 里的 `proxy_url`。
 
 工作区位置变了也没关系：`./install.sh` 会把 launcher 里的绝对路径按新位置重写，再重跑一次即可。
-
-## 怎么用
-
-装好之后直接对我说：
-
-- 「跑完了发消息告诉我」
-- 「这个要跑很久，完成后 Telegram 通知我」
-- 「把失败的测试摘要发我」
-
-`notify-telegram` skill 会自动触发。手动调用也可以：
-
-```bash
-notify "部署完成"
-notify --title "夜间报告" "$(printf '| 套件 | 通过 |\n|---|---|\n| api | 120 |')"
-notify --photo /tmp/screenshot.png --caption "修好后的界面"
-notify --file /tmp/logs.zip --title "事故日志"
-```
-
-默认走 Telegram Rich Messages（`sendRichMessage`），Markdown 表格、公式、标题都会被原生渲染，不用转义。服务端不支持时自动降级成纯文本。
 
 ## 排查
 

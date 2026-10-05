@@ -2,6 +2,77 @@
 
 CLI tool for sending Telegram notifications through a bot, designed for autonomous local agents.
 
+> 这是 [ascorblack/notify-telegram-cli](https://github.com/ascorblack/notify-telegram-cli) 的个人 fork。
+> CLI 代码未改动，只加了一层安装脚本、配置向导，并给 skill 的 description 补了中文触发词。
+> 相对上游的完整改动、重装与排查见 [SETUP.md](SETUP.md)。
+
+## 首次安装
+
+前置只有 `git` 和 `python3`（≥ 3.10）。`notify_cli.py` 只用标准库，不需要 pip、`jq`、`curl`。
+
+### 1. 克隆
+
+```bash
+git clone https://github.com/Etsuya233/notify-telegram-cli.git ~/programming/tg-notification
+cd ~/programming/tg-notification
+```
+
+### 2. 安装
+
+```bash
+./install.sh
+```
+
+它会生成两样东西，并保证配置目录存在：
+
+| 生成 | 位置 |
+|---|---|
+| launcher | `~/.local/bin/notify` |
+| skill 软链 | `~/.agents/skills/notify-telegram` |
+
+若 `~/.local/bin` 不在 PATH 里：
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+### 3. 配置凭据
+
+```bash
+./setup-wizard.sh
+```
+
+向导走四步：确认代理 → 在 [@BotFather](https://t.me/BotFather) 建 bot 拿 token → 给 bot 发一句话，自动捕获 chat_id → 写配置并发测试消息。
+
+token 用隐藏输入读取，直接落进 600 权限的配置文件，不经过对话记录。
+
+### 4. 验证
+
+```bash
+notify --doctor
+```
+
+全绿即可用。doctor 不打印 token，只回报 `reachable as @yourbot`。
+
+## 怎么用
+
+装好之后直接对 agent 说：
+
+- 「跑完了发消息告诉我」
+- 「这个要跑很久，完成后 Telegram 通知我」
+- 「把失败的测试摘要发我」
+
+`notify-telegram` skill 会自动触发。手动调用：
+
+```bash
+notify "部署完成"
+notify --title "夜间报告" "$(printf '| 套件 | 通过 |\n|---|---|\n| api | 120 |')"
+notify --photo /tmp/screenshot.png --caption "修好后的界面"
+notify --file /tmp/logs.zip --title "事故日志"
+```
+
+默认走 Telegram Rich Messages（`sendRichMessage`），Markdown 表格、公式、标题都会被原生渲染，不用转义。服务端不支持时自动降级成纯文本。
+
 ## What It Does
 
 - sends Markdown messages by default via Telegram Rich Messages (`sendRichMessage`, Bot API 10.1+) with native rendering of tables, formulas, headings, and lists — no escaping needed
