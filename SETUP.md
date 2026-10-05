@@ -4,11 +4,12 @@
 
 本仓库是 [ascorblack/notify-telegram-cli](https://github.com/ascorblack/notify-telegram-cli) 的 fork，在此之上加了一层「装到 DSH 里、中文可触发」的配置。上游的 CLI 代码未作任何改动。
 
-上游是 `origin`，本 fork 是 `fork`：
+上游是 `upstream`，本 fork 是 `origin`：
 
 ```bash
-git diff origin/main        # 看这个 fork 相对上游的全部改动
-git fetch origin && git diff origin/main..main
+git fetch upstream
+git diff upstream/main          # 看本 fork 相对上游的全部改动
+git log --oneline upstream/main..main
 ```
 
 ## 本 fork 相对上游改了什么
