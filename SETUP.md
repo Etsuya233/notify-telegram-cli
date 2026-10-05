@@ -1,32 +1,52 @@
-# tg-notification
+# notify-telegram-cli（个人 fork）
 
 让 AI agent 通过 Telegram Bot 主动给你推送消息。
 
-采用现成方案 [notify-telegram-cli](https://github.com/ascorblack/notify-telegram-cli)，本仓库保留它的源码作为唯一真相。
+本仓库是 [ascorblack/notify-telegram-cli](https://github.com/ascorblack/notify-telegram-cli) 的 fork，在此之上加了一层「装到 DSH 里、中文可触发」的配置。上游的 CLI 代码未作任何改动。
+
+上游是 `origin`，本 fork 是 `fork`：
+
+```bash
+git diff origin/main        # 看这个 fork 相对上游的全部改动
+git fetch origin && git diff origin/main..main
+```
+
+## 本 fork 相对上游改了什么
+
+只有四处，其中三处是新增文件：
+
+| 文件 | 改动 |
+|---|---|
+| `skills/notify-telegram/SKILL.md` | description 加了中文触发词，正文逐字未动 |
+| `install.sh` | 新增。幂等安装 launcher + skill 软链 |
+| `setup-wizard.sh` | 新增。引导式配置向导 |
+| `SETUP.md` | 新增。本文件 |
 
 ## 装了什么，装在哪
 
 | 位置 | 内容 |
 |---|---|
-| `notify-telegram-cli/` | 上游源码（git clone，可 `git pull` 更新） |
-| `~/.local/bin/notify` | launcher，指向本目录的 `notify_cli.py` |
-| `skills/notify-telegram/SKILL.md` | 本仓库内的 skill，正文同上游，description 加了中文触发词 |
+| 本仓库根目录 | 就是 CLI 本身（`notify_cli.py`） |
+| `~/.local/bin/notify` | launcher，指向本仓库的 `notify_cli.py` |
+| `skills/notify-telegram/SKILL.md` | 本仓库内的 skill |
 | `~/.agents/skills/notify-telegram` | 软链到上一行，DSH 的 user skill root，所有项目可用 |
 | `~/.config/notify-telegram-cli/config.json` | token / chat_id / 代理，权限 600 |
 
-launcher 里写的是本目录的绝对路径，所以 `git pull` 之后行为立即更新，不用重装。
+launcher 里写的是本仓库的绝对路径，所以 `git pull` 之后行为立即更新，不用重装。
 
 ## 安装 / 重装
 
 ```bash
-./install.sh              # 幂等，可反复运行；缺 CLI 源码会自动 clone 上游
-./install.sh --update     # 顺带 git pull 更新上游 CLI
+./install.sh              # 幂等，可反复运行
+./install.sh --update     # 顺带 git pull 更新本仓库
 ./install.sh --dry-run    # 只报告要做什么，不改任何东西
 ```
 
-它做五件事：补 CLI 源码 → 校验 skill 源码在 → 生成 launcher → 建 skill 软链 → 保证配置目录存在且为 700。
+它做五件事：确认 CLI 在位 → 校验 skill 源码在 → 生成 launcher → 建 skill 软链 → 保证配置目录存在且为 700。
 
 只负责「装」，凭据归 `setup-wizard.sh`。两者可以分开重跑。
+
+skill 软链是幂等的：指向正确就跳过；指向别处就替换；若占位的是真实目录（例如上游安装脚本 `cp` 进来的副本），会先备份成 `.bak-<时间戳>` 再建软链。
 
 ## 首次配置
 
@@ -42,24 +62,16 @@ token 用隐藏输入读取，直接落进 600 权限的配置文件，**不经�
 
 顺序是 `install.sh` → `setup-wizard.sh`。
 
-当前工作区**还不是 git 仓库**，所以只能复制目录，或者先 `git init` 把它变成仓库：
-
 ```bash
-# 方式一：复制工作区
-cp -r ~/programming/tg-notification <新位置>
-cd <新位置> && ./install.sh
-
-# 方式二（推荐）：先把工作区变成仓库
+git clone https://github.com/Etsuya233/notify-telegram-cli.git ~/programming/tg-notification
 cd ~/programming/tg-notification
-git init && git add -A && git commit -m "tg-notification setup"
-# 之后就能 clone 到别的机器
+./install.sh          # 装 launcher + skill 软链
+./setup-wizard.sh     # 重建凭据
 ```
 
-`install.sh` 会在缺 CLI 源码时自动 clone 上游，所以 `notify-telegram-cli/` 适合放进 `.gitignore`。
+凭据在 `~/.config/notify-telegram-cli/config.json`，不在仓库里，所以新机器必须重跑向导。
 
-凭据在 `~/.config/notify-telegram-cli/config.json`，不在工作区里，所以新机器必须重跑向导。
-
-无论哪种方式，只要工作区位置变了，`./install.sh` 都会把 launcher 里的绝对路径按新位置重写。
+工作区位置变了也没关系：`./install.sh` 会把 launcher 里的绝对路径按新位置重写，再重跑一次即可。
 
 ## 怎么用
 
