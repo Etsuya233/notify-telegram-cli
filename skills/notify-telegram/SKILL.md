@@ -1,6 +1,6 @@
 ---
 name: notify-telegram
-description: Use when an agent should proactively notify the user in Telegram about progress, results, failures, screenshots, logs, or artifacts from local autonomous work.
+description: Send the user a Telegram message via their bot. Use when the user asks to be notified (通知我 / 发消息给我 / 告我一声 / 跑完叫我 / ping 我), when long-running work finishes or fails, when a decision is needed, or when a screenshot, log, or file should reach them.
 ---
 
 # Notify Telegram
